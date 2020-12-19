@@ -1,26 +1,42 @@
 from time import time
 from functools import reduce
 from math import exp
-from random import random
+import numpy as np
+import cv2 as cv
+from tensorflow.keras import datasets
 
-def DotProduct(X,W):
-    return sum(map(lambda x:x[0]*x[1],zip(X+[1],W)))
+[(x_train,y_train),(x_test,y_test)]=datasets.mnist.load_data()
+cv.imshow('Yen Nhi',x_train[0])
+cv.waitKey()
 
-def Sigmoid(realNumber):
-    return 1/(1+exp(-realNumber))
+def DenseNet():
+    layers=[]
+    feed_forward_output=[]
 
-def Layer(numOfInputs,numOfOutputs):
-    return [[random() for noOfInp in range(numOfInputs)] for noOfOut in range(numOfOutputs)]
+    def layer(num_inputs,num_outputs):
+        nonlocal layers
+        layers+=[np.random.rand(num_outputs,num_inputs+1)]
 
-def feedForward(_input,layer):
-    return [Sigmoid(DotProduct(_input,neural)) for neural in layer]
+    def feed_forward(input_layer):
+        nonlocal layers,feed_forward_output
+        feed_forward_output=[None for layer in layers]
+        current_input=input_layer
+        for idx in range(len(layers)):
+            current_input=np.concatenate((current_input,[1]))
+            feed_forward_output[idx]=1/(1+np.exp(-np.dot(layers[idx],current_input)))
+            current_input=feed_forward_output[idx]
+        return current_input
 
-def backPropagationOutput(_input,_output,true_output,layer):
-    return _output*(1-_output)(true_output-_output)*_input
+    def back_propagation(true_label):
+        nonlocal layers,feed_forward_output
+        layers[-1]+=np.dot(true_label*feed_forward_output[-1]*(1-feed_forward_output[-1]).reshape(-1,1),feed_forward_output[-2].reshape(1,-1))
+        for idx in range(len(layers),0,-1):
+            x=feed_forward_output[idx-1]
+            delta_x
 
-def backPropagationHiddenLayer(_output,layer,delta):
-    return _output
+    def backPropagationHiddenLayer(_output,layer,delta):
+        return _output
 
-layer=Layer(10,10)
-_input=[-5,-4,-3,-2,-1,0,1,2,3,4]
-print(feedForward(_input,layer))
+    layer=Layer(10,10)
+    _input=[-5,-4,-3,-2,-1,0,1,2,3,4]
+    print(feedForward(_input,layer))
